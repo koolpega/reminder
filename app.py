@@ -10,7 +10,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 
 FIREBASE_SERVICE_ACCOUNT = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
-FIREBASE_DATABASE_URL = os.environ.get("DATABASE_URL")
+FIREBASE_DATABASE_URL = os.environ.get("FIREBASE_DATABASE_URL")
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
