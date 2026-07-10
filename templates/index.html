@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reminder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+{% if not authed %}
+<main class="gate">
+  <div class="gate-panel">
+    <div class="prompt-line"><span class="prompt-sigil">&gt;</span> Reminder <span class="cursor">_</span></div>
+    <p class="gate-copy">Enter your access code to continue. Codes don't expire, so this is a one-time step on this device.</p>
+    <form id="gate-form" autocomplete="off">
+      <input type="text" id="gate-code" name="code" placeholder="ACCESS CODE" autocomplete="off" spellcheck="false" required>
+      <button type="submit">Unlock</button>
+    </form>
+    <p class="gate-error" id="gate-error"></p>
+  </div>
+</main>
+
+<script>
+document.getElementById('gate-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const code = document.getElementById('gate-code').value.trim();
+  const err = document.getElementById('gate-error');
+  err.textContent = '';
+  if (!code) return;
+  try {
+    const res = await fetch('/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.reload();
+    } else {
+      err.textContent = data.message || 'Invalid code.';
+    }
+  } catch (e) {
+    err.textContent = 'Something went wrong. Try again.';
+  }
+});
+</script>
+
+{% else %}
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand"><span class="prompt-sigil">&gt;</span> Reminder <span class="cursor">_</span></div>
+    <div class="status-pill" id="status-pill">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">checking status&hellip;</span>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <section class="panel" id="panel-book">
+      <h2><span class="tag">01</span> Book a slot</h2>
+      <p class="panel-sub">Times you enter use your device's local time and are converted to IST automatically.</p>
+
+      <form id="book-form">
+        <label for="date-select">Date</label>
+        <select id="date-select" required>
+          <option value="" disabled selected>Loading dates&hellip;</option>
+        </select>
+
+        <label for="range-select">Available window</label>
+        <select id="range-select" required disabled>
+          <option value="" disabled selected>Pick a date first</option>
+        </select>
+        <p class="hint" id="range-hint"></p>
+
+        <div class="time-row">
+          <div class="field">
+            <label for="start-time">Start (local time)</label>
+            <input type="time" id="start-time" required disabled>
+          </div>
+          <div class="field">
+            <label for="end-time">End (local time)</label>
+            <input type="time" id="end-time" required disabled>
+          </div>
+        </div>
+        <p class="hint" id="duration-hint">Max slot length: 1 hour.</p>
+
+        <label for="book-name">Your name</label>
+        <input type="text" id="book-name" placeholder="e.g. Spreak" required>
+
+        <label for="book-reason">Reason</label>
+        <input type="text" id="book-reason" placeholder="e.g. TCP capture tutorial" required>
+
+        <button type="submit" id="book-submit" disabled>Book slot</button>
+        <p class="form-message" id="book-message"></p>
+      </form>
+    </section>
+
+    <section class="panel" id="panel-booked">
+      <h2><span class="tag">02</span> Booked slots</h2>
+      <p class="panel-sub">Every confirmed booking, visible to everyone.</p>
+      <ul class="slot-log" id="booked-list">
+        <li class="slot-empty">Loading&hellip;</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="panel-reminder">
+      <h2><span class="tag">03</span> Send a reminder</h2>
+      <p class="panel-sub">Delivered straight to me on Telegram.</p>
+      <form id="reminder-form">
+        <label for="reminder-name">Your name</label>
+        <input type="text" id="reminder-name" placeholder="e.g. Vikend" required>
+
+        <label for="reminder-message">Message</label>
+        <textarea id="reminder-message" rows="3" placeholder="What should I be reminded of?" required></textarea>
+
+        <button type="submit">Send reminder</button>
+        <p class="form-message" id="reminder-message-status"></p>
+      </form>
+    </section>
+
+  </main>
+
+  <footer class="footer">All times shown are IST unless marked otherwise.</footer>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% endif %}
+
+</body>
+</html>
